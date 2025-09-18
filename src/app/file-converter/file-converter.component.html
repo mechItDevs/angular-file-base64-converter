@@ -1,0 +1,42 @@
+<div class="p-6 max-w-3xl mx-auto">
+  <h2 class="text-xl font-bold mb-4">File ↔ Base64 ↔ JSON Converter</h2>
+
+  <!-- Upload File -->
+  <div class="mb-6">
+    <label class="block mb-2 font-medium">Upload File (json/pdf/xlsx/zip)</label>
+    <input type="file" (change)="onFileChange($event)" accept=".json,.pdf,.xlsx,.zip" />
+  </div>
+
+  <!-- Base64 Output -->
+  <div *ngIf="base64String" class="mb-6">
+    <label class="block mb-2 font-medium">Base64 Output</label>
+    <textarea rows="6" class="w-full border p-2" readonly>{{ base64String }}</textarea>
+    <button (click)="copyBase64()" class="mt-2 bg-green-500 text-white px-3 py-1 rounded">Copy</button>
+  </div>
+
+  <!-- JSON Input -->
+  <div class="mb-6">
+    <label class="block mb-2 font-medium">Enter JSON Text</label>
+    <textarea [(ngModel)]="jsonInput" rows="6" class="w-full border p-2"></textarea>
+    <button (click)="convertJsonToBase64()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+      Convert JSON → Base64
+    </button>
+  </div>
+
+  <!-- Convert Base64 back to File -->
+  <div class="mb-6">
+    <label class="block mb-2 font-medium">Paste Base64 String</label>
+    <textarea [(ngModel)]="inputBase64" rows="6" class="w-full border p-2"></textarea>
+    <input [(ngModel)]="fileName" type="text" placeholder="Enter file name with extension"
+           class="border p-2 w-full mt-2"/>
+    <button (click)="downloadFile()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+      Download File
+    </button>
+  </div>
+
+  <!-- JSON Preview -->
+  <div *ngIf="jsonPreview" class="mb-6">
+    <label class="block mb-2 font-medium">Decoded JSON Preview</label>
+    <pre class="bg-gray-100 p-3 border rounded">{{ jsonPreview | json }}</pre>
+  </div>
+</div>
