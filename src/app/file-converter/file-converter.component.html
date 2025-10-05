@@ -1,42 +1,115 @@
-<div class="p-6 max-w-3xl mx-auto">
-  <h2 class="text-xl font-bold mb-4">File ↔ Base64 ↔ JSON Converter</h2>
+<div class="page">
+  <nav class="navbar">
+    <div class="nav-left">File Converter</div>
 
-  <!-- Upload File -->
-  <div class="mb-6">
-    <label class="block mb-2 font-medium">Upload File (json/pdf/xlsx/zip)</label>
-    <input type="file" (change)="onFileChange($event)" accept=".json,.pdf,.xlsx,.zip" />
-  </div>
+    <button class="menu-toggle" (click)="toggleMenu()">☰</button>
 
-  <!-- Base64 Output -->
-  <div *ngIf="base64String" class="mb-6">
-    <label class="block mb-2 font-medium">Base64 Output</label>
-    <textarea rows="6" class="w-full border p-2" readonly>{{ base64String }}</textarea>
-    <button (click)="copyBase64()" class="mt-2 bg-green-500 text-white px-3 py-1 rounded">Copy</button>
-  </div>
+    <div class="nav-right" [class.active]="menuOpen">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Help</a>
+    </div>
+  </nav>
 
-  <!-- JSON Input -->
-  <div class="mb-6">
-    <label class="block mb-2 font-medium">Enter JSON Text</label>
-    <textarea [(ngModel)]="jsonInput" rows="6" class="w-full border p-2"></textarea>
-    <button (click)="convertJsonToBase64()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-      Convert JSON → Base64
-    </button>
-  </div>
+  <main class="container">
+    <section class="controls">
+      <div class="dropdowns">
+        <div class="dropdown">
+          <label>From file</label>
+          <select [(ngModel)]="fromType" (change)="onFromTypeChange()">
+            <option value="" disabled selected>Select From File</option>
+            <option *ngFor="let t of fromOptions" [value]="t">{{ t | uppercase }}</option>
+          </select>
+        </div>
 
-  <!-- Convert Base64 back to File -->
-  <div class="mb-6">
-    <label class="block mb-2 font-medium">Paste Base64 String</label>
-    <textarea [(ngModel)]="inputBase64" rows="6" class="w-full border p-2"></textarea>
-    <input [(ngModel)]="fileName" type="text" placeholder="Enter file name with extension"
-           class="border p-2 w-full mt-2"/>
-    <button (click)="downloadFile()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-      Download File
-    </button>
-  </div>
+        <div class="dropdown">
+          <label>To file</label>
+          <select [(ngModel)]="toType">
+            <option value="" disabled selected>Select To File</option>
+            <option *ngFor="let t of toOptions" [value]="t">{{ t | uppercase }}</option>
+          </select>
+        </div>
+      </div>
 
-  <!-- JSON Preview -->
-  <div *ngIf="jsonPreview" class="mb-6">
-    <label class="block mb-2 font-medium">Decoded JSON Preview</label>
-    <pre class="bg-gray-100 p-3 border rounded">{{ jsonPreview | json }}</pre>
-  </div>
+      <!-- Status Message -->
+      <section class="status" *ngIf="lastMessage">
+        <strong>Status:</strong> {{ lastMessage }}
+      </section>
+
+      <div class="io-area">
+        <!-- LEFT: File Upload -->
+        <div
+          class="left-block"
+          *ngIf="fromType && fromType !== 'base64'"
+          (dragover)="onDragOver($event)"
+          (drop)="onDrop($event)"
+        >
+          <div class="upload-center">
+            <label class="upload-label">Upload file</label>
+            <div
+              class="upload-drop"
+              (click)="fileInput.click()"
+              [class.invalid]="validationError"
+            >
+              <input #fileInput type="file" (change)="onFileSelected($event)" hidden />
+              <div *ngIf="!selectedFileName" class="placeholder">
+                Click to choose file or drag & drop ({{ allowedExtensions(fromType).join(', ') }})
+              </div>
+              <div *ngIf="selectedFileName" class="file-info">
+                <div class="filename">{{ selectedFileName }}</div>
+                <div class="filesize">{{ selectedFileSizeText }}</div>
+              </div>
+            </div>
+            <div class="validation" *ngIf="validationError">{{ validationError }}</div>
+
+            <div class="convert-area">
+              <input
+                placeholder="Enter output file name"
+                [(ngModel)]="outputName"
+                class="name-input"
+              />
+              <button class="convert-btn" (click)="onConvert()" [disabled]="!canConvert()">
+                Convert
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEFT: Base64 Input -->
+        <div class="left-block" *ngIf="fromType === 'base64'">
+          <div class="upload-center">
+            <label class="upload-label">Paste Base64 Data</label>
+            <textarea
+              class="base64-input"
+              [(ngModel)]="outputText"
+              placeholder="Paste your Base64 content here..."
+              rows="18"
+            ></textarea>
+
+            <div class="convert-area">
+              <input
+                placeholder="Enter output file name"
+                [(ngModel)]="outputName"
+                class="name-input"
+              />
+              <button class="convert-btn" (click)="onConvert()" [disabled]="!canConvert()">
+                Convert
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Output -->
+        <div class="right-block" *ngIf="showOutputTextarea && fromType !== 'base64'">
+          <div class="right-header">
+            <button class="copy-btn" (click)="copyOutputText()" [disabled]="!outputText">
+              Copy
+            </button>
+          </div>
+          <label>Output</label>
+          <textarea rows="18" [value]="outputText" readonly></textarea>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>
