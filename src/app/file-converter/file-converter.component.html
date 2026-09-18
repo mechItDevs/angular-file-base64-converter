@@ -5,7 +5,7 @@
     <div class="nav-right" [class.active]="menuOpen"><a href="#top">Home</a><a href="#converter">Converter</a></div>
   </nav>
   <main class="container" id="top">
-    <section class="intro"><p class="eyebrow">PRIVATE, BROWSER-BASED</p><h1>Convert files without uploading them.</h1><p>Files are processed locally in your browser. XLSX files become readable JSON; other supported formats convert to and from Base64.</p></section>
+    <section class="intro"><p class="eyebrow">PRIVATE, BROWSER-BASED</p><h1>Fast, secure file conversion in your browser.</h1><p>Your files stay on your device—nothing is uploaded or stored on a server. Convert XLSX data to JSON, transform JSON into spreadsheets, or encode supported files as Base64 in just a few clicks.</p></section>
     <section class="controls" id="converter" aria-label="File conversion">
       <div class="dropdowns">
         <div class="dropdown"><label for="from-type">From</label><select id="from-type" [(ngModel)]="fromType" (change)="onFromTypeChange()"><option value="" disabled>Select input type</option><option *ngFor="let t of fromOptions" [value]="t">{{ t | uppercase }}</option></select></div>
