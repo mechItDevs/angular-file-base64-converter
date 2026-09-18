@@ -1,114 +1,33 @@
 <div class="page">
   <nav class="navbar">
-    <div class="nav-left">File Converter</div>
-
-    <button class="menu-toggle" (click)="toggleMenu()">☰</button>
-
-    <div class="nav-right" [class.active]="menuOpen">
-      <a href="#">Home</a>
-      <a href="#">About</a>
-      <a href="#">Help</a>
-    </div>
+    <a class="nav-left" href="#top">File Converter</a>
+    <button class="menu-toggle" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen" aria-label="Toggle navigation">☰</button>
+    <div class="nav-right" [class.active]="menuOpen"><a href="#top">Home</a><a href="#converter">Converter</a></div>
   </nav>
-
-  <main class="container">
-    <section class="controls">
+  <main class="container" id="top">
+    <section class="intro"><p class="eyebrow">PRIVATE, BROWSER-BASED</p><h1>Convert files without uploading them.</h1><p>Files are processed locally in your browser. XLSX files become readable JSON; other supported formats convert to and from Base64.</p></section>
+    <section class="controls" id="converter" aria-label="File conversion">
       <div class="dropdowns">
-        <div class="dropdown">
-          <label>From file</label>
-          <select [(ngModel)]="fromType" (change)="onFromTypeChange()">
-            <option value="" disabled selected>Select From File</option>
-            <option *ngFor="let t of fromOptions" [value]="t">{{ t | uppercase }}</option>
-          </select>
-        </div>
-
-        <div class="dropdown">
-          <label>To file</label>
-          <select [(ngModel)]="toType">
-            <option value="" disabled selected>Select To File</option>
-            <option *ngFor="let t of toOptions" [value]="t">{{ t | uppercase }}</option>
-          </select>
-        </div>
+        <div class="dropdown"><label for="from-type">From</label><select id="from-type" [(ngModel)]="fromType" (change)="onFromTypeChange()"><option value="" disabled>Select input type</option><option *ngFor="let t of fromOptions" [value]="t">{{ t | uppercase }}</option></select></div>
+        <div class="dropdown"><label for="to-type">To</label><select id="to-type" [(ngModel)]="toType" [disabled]="!fromType"><option value="" disabled>Select output type</option><option *ngFor="let t of toOptions" [value]="t">{{ t | uppercase }}</option></select></div>
       </div>
-
-      <!-- Status Message -->
-      <section class="status" *ngIf="lastMessage">
-        <strong>Status:</strong> {{ lastMessage }}
-      </section>
-
-      <div class="io-area">
-        <!-- LEFT: File Upload -->
-        <div
-          class="left-block"
-          *ngIf="fromType && fromType !== 'base64'"
-          (dragover)="onDragOver($event)"
-          (drop)="onDrop($event)"
-        >
-          <div class="upload-center">
-            <label class="upload-label">Upload file</label>
-            <div
-              class="upload-drop"
-              (click)="fileInput.click()"
-              [class.invalid]="validationError"
-            >
-              <input #fileInput type="file" (change)="onFileSelected($event)" hidden />
-              <div *ngIf="!selectedFileName" class="placeholder">
-                Click to choose file or drag & drop ({{ allowedExtensions(fromType).join(', ') }})
-              </div>
-              <div *ngIf="selectedFileName" class="file-info">
-                <div class="filename">{{ selectedFileName }}</div>
-                <div class="filesize">{{ selectedFileSizeText }}</div>
-              </div>
-            </div>
-            <div class="validation" *ngIf="validationError">{{ validationError }}</div>
-
-            <div class="convert-area">
-              <input
-                placeholder="Enter output file name"
-                [(ngModel)]="outputName"
-                class="name-input"
-              />
-              <button class="convert-btn" (click)="onConvert()" [disabled]="!canConvert()">
-                Convert
-              </button>
-            </div>
+      <p class="notice" *ngIf="!fromType">Choose the input format to get started.</p><p class="status" *ngIf="lastMessage" role="status">{{ lastMessage }}</p><p class="validation" *ngIf="validationError" role="alert">{{ validationError }}</p>
+      <div class="io-area" *ngIf="fromType">
+        <section class="left-block json-input-choice" *ngIf="fromType === 'json'">
+          <span class="upload-label">JSON input</span>
+          <div class="input-mode-buttons" role="group" aria-label="JSON input method">
+            <button type="button" class="secondary-btn" [class.active]="jsonInputMode === 'file'" (click)="setJsonInputMode('file')">Upload file</button>
+            <button type="button" class="secondary-btn" [class.active]="jsonInputMode === 'text'" (click)="setJsonInputMode('text')">Paste text</button>
           </div>
-        </div>
-
-        <!-- LEFT: Base64 Input -->
-        <div class="left-block" *ngIf="fromType === 'base64'">
-          <div class="upload-center">
-            <label class="upload-label">Paste Base64 Data</label>
-            <textarea
-              class="base64-input"
-              [(ngModel)]="outputText"
-              placeholder="Paste your Base64 content here..."
-              rows="18"
-            ></textarea>
-
-            <div class="convert-area">
-              <input
-                placeholder="Enter output file name"
-                [(ngModel)]="outputName"
-                class="name-input"
-              />
-              <button class="convert-btn" (click)="onConvert()" [disabled]="!canConvert()">
-                Convert
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT: Output -->
-        <div class="right-block" *ngIf="showOutputTextarea && fromType !== 'base64'">
-          <div class="right-header">
-            <button class="copy-btn" (click)="copyOutputText()" [disabled]="!outputText">
-              Copy
-            </button>
-          </div>
-          <label>Output</label>
-          <textarea rows="18" [value]="outputText" readonly></textarea>
-        </div>
+        </section>
+        <section class="left-block" *ngIf="fromType !== 'base64' && !(fromType === 'json' && jsonInputMode === 'text')" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+          <label class="upload-label" for="file-input">Upload {{ fromType | uppercase }} file</label>
+          <button class="upload-drop" type="button" [class.dragover]="isDragging" [class.invalid]="validationError" (click)="fileInput.click()"><input #fileInput id="file-input" type="file" [accept]="allowedExtensions(fromType).join(',')" (change)="onFileSelected($event)" hidden><span *ngIf="!selectedFileName">Drop a file here or click to browse<br><small>{{ allowedExtensions(fromType).join(', ') }} only</small></span><span *ngIf="selectedFileName" class="file-info"><strong>{{ selectedFileName }}</strong><small>{{ selectedFileSizeText }} · Click to replace</small></span></button>
+          <button class="convert-btn" type="button" (click)="onConvert()" [disabled]="!canConvert()">Convert to {{ toType ? (toType | uppercase) : '…' }}</button>
+        </section>
+        <section class="left-block" *ngIf="fromType === 'json' && jsonInputMode === 'text'"><label class="upload-label" for="json-input">Paste JSON data</label><textarea id="json-input" class="text-input" [(ngModel)]="inputText" placeholder='e.g. [{"name": "Ada"}]' rows="14"></textarea><button class="convert-btn" type="button" (click)="onConvert()" [disabled]="!canConvert()">Convert to {{ toType ? (toType | uppercase) : '…' }}</button></section>
+        <section class="left-block" *ngIf="fromType === 'base64'"><label class="upload-label" for="base64-input">Paste Base64 data</label><textarea id="base64-input" class="base64-input" [(ngModel)]="inputText" placeholder="Paste Base64 or a data: URL…" rows="14"></textarea><label class="output-label" for="output-name">Output file name</label><input id="output-name" class="name-input" [(ngModel)]="outputName" placeholder="e.g. report"><button class="convert-btn" type="button" (click)="onConvert()" [disabled]="!canConvert()">Download {{ toType ? (toType | uppercase) : 'file' }}</button></section>
+        <section class="right-block" *ngIf="showOutputTextarea"><div class="right-header"><label for="output">Converted {{ toType | uppercase }}</label><span><button class="secondary-btn" type="button" (click)="copyOutputText()">Copy</button><button class="secondary-btn download-btn" type="button" (click)="downloadOutput()" *ngIf="toType === 'json'">Download</button></span></div><textarea id="output" rows="18" [value]="outputText" readonly></textarea></section>
       </div>
     </section>
   </main>
